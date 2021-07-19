@@ -6,8 +6,11 @@
 (defpackage :ofdm-transfer
   (:use :cl)
   (:import-from :cffi
+                #:callback
+                #:defcallback
                 #:defcfun
                 #:define-foreign-library
+                #:mem-aref
                 #:null-pointer
                 #:null-pointer-p
                 #:use-foreign-library)
@@ -16,8 +19,10 @@
            #:start-transfer
            #:stop-all-transfers
            #:stop-transfer
-           #:transmit
-           #:receive
+           #:transmit-file
+           #:transmit-stream
+           #:receive-file
+           #:receive-stream
            #:verbosity))
 
 (in-package :ofdm-transfer)
@@ -59,7 +64,28 @@
   (inner-fec :string)
   (outer-fec :string)
   (id :string)
-  (dump (:pointer :char)))
+  (dump :string))
+
+(defcfun ("ofdm_transfer_create_callback" ofdm-transfer-create-callback) :pointer
+  "Initialize a new transfer."
+  (radio-driver :string)
+  (emit :unsigned-char)
+  (data-callback :pointer)
+  (callback-context :pointer)
+  (sample-rate :unsigned-long)
+  (bit-rate :unsigned-int)
+  (frequency :unsigned-long)
+  (frequency-offset :long)
+  (gain :unsigned-int)
+  (ppm :float)
+  (subcarrier-modulation :string)
+  (subcarriers :unsigned-int)
+  (cyclic-prefix-length :unsigned-int)
+  (taper-length :unsigned-int)
+  (inner-fec :string)
+  (outer-fec :string)
+  (id :string)
+  (dump :string))
 
 (defcfun ("ofdm_transfer_free" ofdm-transfer-free) :void
   "Cleanup after a finished transfer."
@@ -104,32 +130,57 @@
   "Set the verbosity level."
   (ofdm-transfer-set-verbose value))
 
-(defun make-transfer (file emit
-                      &key
-                        (radio-driver "") (sample-rate 2000000) (bit-rate 38400)
+(defun make-transfer (&key
+                        (radio-driver "") emit file data-callback
+                        callback-context (sample-rate 2000000) (bit-rate 38400)
                         (frequency 434000000) (frequency-offset 0) (gain 0)
                         (ppm 0.0) (subcarrier-modulation "qpsk")
                         (subcarriers 64) (cyclic-prefix-length 16)
                         (taper-length 4) (inner-fec "h128") (outer-fec "none")
-                        (id ""))
+                        (id "") dump)
   "Initialize a transfer."
-  (let ((transfer (ofdm-transfer-create radio-driver
-                                        (if emit 1 0)
-                                        file
-                                        sample-rate
-                                        bit-rate
-                                        frequency
-                                        frequency-offset
-                                        gain
-                                        ppm
-                                        subcarrier-modulation
-                                        subcarriers
-                                        cyclic-prefix-length
-                                        taper-length
-                                        inner-fec
-                                        outer-fec
-                                        id
-                                        (null-pointer))))
+  (when (or (and file data-callback)
+            (and (not file) (not data-callback)))
+    (error "Either FILE or DATA-CALLBACK must be specified."))
+  (let ((transfer (if file
+                      (ofdm-transfer-create radio-driver
+                                            (if emit 1 0)
+                                            file
+                                            sample-rate
+                                            bit-rate
+                                            frequency
+                                            frequency-offset
+                                            gain
+                                            ppm
+                                            subcarrier-modulation
+                                            subcarriers
+                                            cyclic-prefix-length
+                                            taper-length
+                                            inner-fec
+                                            outer-fec
+                                            id
+                                            (or dump
+                                                (null-pointer)))
+                      (ofdm-transfer-create-callback radio-driver
+                                                     (if emit 1 0)
+                                                     data-callback
+                                                     (or callback-context
+                                                         (null-pointer))
+                                                     sample-rate
+                                                     bit-rate
+                                                     frequency
+                                                     frequency-offset
+                                                     gain
+                                                     ppm
+                                                     subcarrier-modulation
+                                                     subcarriers
+                                                     cyclic-prefix-length
+                                                     taper-length
+                                                     inner-fec
+                                                     outer-fec
+                                                     id
+                                                     (or dump
+                                                         (null-pointer))))))
     (if (null-pointer-p transfer)
         (error "Failed to initialize transfer.")
         transfer)))
@@ -150,16 +201,17 @@
   "Interrupt all transfers."
   (ofdm-transfer-stop-all))
 
-(defun transmit (file
-                 &key
-                   (radio-driver "") (sample-rate 2000000) (bit-rate 38400)
-                   (frequency 434000000) (frequency-offset 0) (gain 0)
-                   (ppm 0.0) (subcarrier-modulation "qpsk")
-                   (subcarriers 64) (cyclic-prefix-length 16)
-                   (taper-length 4) (inner-fec "h128") (outer-fec "none")
-                   (id ""))
+(defun transmit-file (file
+                      &key
+                        (radio-driver "") (sample-rate 2000000) (bit-rate 38400)
+                        (frequency 434000000) (frequency-offset 0) (gain 0)
+                        (ppm 0.0) (subcarrier-modulation "qpsk")
+                        (subcarriers 64) (cyclic-prefix-length 16)
+                        (taper-length 4) (inner-fec "h128") (outer-fec "none")
+                        (id "") dump)
   "Transmit the data from FILE."
-  (let ((transfer (make-transfer file t
+  (let ((transfer (make-transfer :emit t
+                                 :file file
                                  :radio-driver radio-driver
                                  :sample-rate sample-rate
                                  :bit-rate bit-rate
@@ -173,21 +225,23 @@
                                  :taper-length taper-length
                                  :inner-fec inner-fec
                                  :outer-fec outer-fec
-                                 :id id)))
+                                 :id id
+                                 :dump dump)))
     (unwind-protect (ofdm-transfer-start transfer)
       (ofdm-transfer-free transfer))
     t))
 
-(defun receive (file
-                &key
-                  (radio-driver "") (sample-rate 2000000) (bit-rate 38400)
-                  (frequency 434000000) (frequency-offset 0) (gain 0)
-                  (ppm 0.0) (subcarrier-modulation "qpsk")
-                  (subcarriers 64) (cyclic-prefix-length 16)
-                  (taper-length 4) (inner-fec "h128") (outer-fec "none")
-                  (id ""))
+(defun receive-file (file
+                     &key
+                       (radio-driver "") (sample-rate 2000000) (bit-rate 38400)
+                       (frequency 434000000) (frequency-offset 0) (gain 0)
+                       (ppm 0.0) (subcarrier-modulation "qpsk")
+                       (subcarriers 64) (cyclic-prefix-length 16)
+                       (taper-length 4) (inner-fec "h128") (outer-fec "none")
+                       (id "") dump)
   "Receive data into FILE."
-  (let ((transfer (make-transfer file nil
+  (let ((transfer (make-transfer :emit nil
+                                 :file file
                                  :radio-driver radio-driver
                                  :sample-rate sample-rate
                                  :bit-rate bit-rate
@@ -201,7 +255,101 @@
                                  :taper-length taper-length
                                  :inner-fec inner-fec
                                  :outer-fec outer-fec
-                                 :id id)))
+                                 :id id
+                                 :dump dump)))
+    (unwind-protect (ofdm-transfer-start transfer)
+      (ofdm-transfer-free transfer))
+    t))
+
+(defparameter *data-stream* nil)
+
+(defcallback read-data-from-stream :int
+    ((context :pointer)
+     (payload :pointer)
+     (payload-size :unsigned-int))
+  (declare (ignore context))
+  (handler-case
+      (do ((i 0 (1+ i))
+           (b (read-byte *data-stream* nil nil)
+              (read-byte *data-stream* nil nil)))
+          ((or (null b) (= i payload-size))
+           (if (and (null b) (zerop i)) -1 i))
+        (setf (mem-aref payload :unsigned-char i) b))
+    (error () -1)))
+
+(defcallback write-data-to-stream :int
+    ((context :pointer)
+     (payload :pointer)
+     (payload-size :unsigned-int))
+  (declare (ignore context))
+  (handler-case
+      (do ((i 0 (1+ i)))
+          ((= i payload-size) i)
+        (write-byte (mem-aref payload :unsigned-char i) *data-stream*))
+    (error () -1)))
+
+(defun transmit-stream (stream
+                        &key
+                          (radio-driver "") (sample-rate 2000000)
+                          (bit-rate 38400) (frequency 434000000)
+                          (frequency-offset 0) (gain 0) (ppm 0.0)
+                          (subcarrier-modulation "qpsk") (subcarriers 64)
+                          (cyclic-prefix-length 16) (taper-length 4)
+                          (inner-fec "h128") (outer-fec "none")
+                          (id "") dump)
+  "Transmit the data from STREAM."
+  (let* ((*data-stream* stream)
+         (transfer (make-transfer :emit t
+                                  :data-callback (callback read-data-from-stream)
+                                  :callback-context (null-pointer)
+                                  :radio-driver radio-driver
+                                  :sample-rate sample-rate
+                                  :bit-rate bit-rate
+                                  :frequency frequency
+                                  :frequency-offset frequency-offset
+                                  :gain gain
+                                  :ppm ppm
+                                  :subcarrier-modulation subcarrier-modulation
+                                  :subcarriers subcarriers
+                                  :cyclic-prefix-length cyclic-prefix-length
+                                  :taper-length taper-length
+                                  :inner-fec inner-fec
+                                  :outer-fec outer-fec
+                                  :id id
+                                  :dump dump)))
+    (unwind-protect (ofdm-transfer-start transfer)
+      (ofdm-transfer-free transfer))
+    t))
+
+(defun receive-stream (stream
+                       &key
+                         (radio-driver "") (sample-rate 2000000)
+                         (bit-rate 38400) (frequency 434000000)
+                         (frequency-offset 0) (gain 0) (ppm 0.0)
+                         (subcarrier-modulation "qpsk") (subcarriers 64)
+                         (cyclic-prefix-length 16) (taper-length 4)
+                         (inner-fec "h128") (outer-fec "none")
+                         (id "") dump)
+  "Receive data to STREAM."
+  (let* ((*data-stream* stream)
+         (transfer (make-transfer :emit nil
+                                  :data-callback (callback write-data-to-stream)
+                                  :callback-context (null-pointer)
+                                  :radio-driver radio-driver
+                                  :sample-rate sample-rate
+                                  :bit-rate bit-rate
+                                  :frequency frequency
+                                  :frequency-offset frequency-offset
+                                  :gain gain
+                                  :ppm ppm
+                                  :subcarrier-modulation subcarrier-modulation
+                                  :subcarriers subcarriers
+                                  :cyclic-prefix-length cyclic-prefix-length
+                                  :taper-length taper-length
+                                  :inner-fec inner-fec
+                                  :outer-fec outer-fec
+                                  :id id
+                                  :dump dump)))
     (unwind-protect (ofdm-transfer-start transfer)
       (ofdm-transfer-free transfer))
     t))
