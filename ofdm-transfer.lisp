@@ -263,6 +263,7 @@
     t))
 
 (defparameter *data-stream* nil)
+(defparameter *buffer* nil)
 
 (defcallback read-data-from-stream :int
     ((context :pointer)
@@ -270,12 +271,18 @@
      (payload-size :unsigned-int))
   (declare (ignore context))
   (handler-case
-      (do ((i 0 (1+ i))
-           (b (read-byte *data-stream* nil nil)
-              (read-byte *data-stream* nil nil)))
-          ((or (null b) (= i payload-size))
-           (if (and (null b) (zerop i)) -1 i))
-        (setf (mem-aref payload :unsigned-char i) b))
+      (labels ((copy-data (total)
+                 (let* ((size (min (length *buffer*) (- payload-size total)))
+                        (n (read-sequence *buffer* *data-stream* :end size)))
+                   (cond
+                     ((zerop n)
+                      (if (zerop total) -1 total))
+                     (t
+                      (dotimes (i n)
+                        (setf (mem-aref payload :unsigned-char (+ total i))
+                              (aref *buffer* i)))
+                      (copy-data (+ total n)))))))
+        (copy-data 0))
     (error () -1)))
 
 (defcallback write-data-to-stream :int
@@ -284,9 +291,18 @@
      (payload-size :unsigned-int))
   (declare (ignore context))
   (handler-case
-      (do ((i 0 (1+ i)))
-          ((= i payload-size) i)
-        (write-byte (mem-aref payload :unsigned-char i) *data-stream*))
+      (labels ((copy-data (total)
+                 (let ((size (min (length *buffer*) (- payload-size total))))
+                   (cond
+                     ((zerop size)
+                      payload-size)
+                     (t
+                      (dotimes (i size)
+                        (setf (aref *buffer* i)
+                              (mem-aref payload :unsigned-char (+ total i))))
+                      (write-sequence *buffer* *data-stream* :end size)
+                      (copy-data (+ total size)))))))
+        (copy-data 0))
     (error () -1)))
 
 (defun transmit-stream (stream
@@ -300,6 +316,7 @@
                           (id "") dump)
   "Transmit the data from STREAM."
   (let* ((*data-stream* stream)
+         (*buffer* (make-array 1024 :element-type '(unsigned-byte 8)))
          (transfer (make-transfer :emit t
                                   :data-callback (callback read-data-from-stream)
                                   :callback-context (null-pointer)
@@ -333,6 +350,7 @@
                          (id "") dump)
   "Receive data to STREAM."
   (let* ((*data-stream* stream)
+         (*buffer* (make-array 1024 :element-type '(unsigned-byte 8)))
          (transfer (make-transfer :emit nil
                                   :data-callback (callback write-data-to-stream)
                                   :callback-context (null-pointer)
