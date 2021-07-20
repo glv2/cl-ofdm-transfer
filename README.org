@@ -1,0 +1,133 @@
+#+TITLE: ofdm-transfer
+#+AUTHOR: Guillaume LE VAILLANT
+#+DATE: 2021-07-20
+#+EMAIL: glv@posteo.net
+#+LANGUAGE: en
+#+OPTIONS: num:nil toc:nil html-postamble:nil html-scripts:nil
+#+HTML_DOCTYPE: html5
+
+* Description
+
+*ofdm-transfer* is a Common Lisp library to send or receive data by software
+defined radio using the OFDM modulation. It uses bindings to the
+libofdm-transfer C library.
+
+* License
+
+*ofdm-transfer* is released under the GPL-3 license or later. See the
+[[file:LICENSE][LICENSE]] file for details.
+
+* Dependencies
+
+*ofdm-transfer* requires:
+ - [[https://common-lisp.net/project/cffi/][cffi]]
+ - [[https://github.com/glv2/ofdm-transfer][libofdm-transfer]]
+
+The tests also require:
+ - [[https://common-lisp.net/project/fiveam/][fiveam]]
+
+* API
+
+After loading the library with ~(asdf:load-system "ofdm-transfer")~ or
+~(quicklisp:quickload "ofdm-transfer")~, the functions will be available
+in the ~ofdm-transfer~ package.
+
+** High level
+
+The key parameters of the following functions match the ones described in
+[[https://github.com/glv2/ofdm-transfer/blob/master/README][ofdm-transfer/README]].
+
+#+BEGIN_SRC lisp
+(transmit-file file
+               &key
+                 radio-driver sample-rate bit-rate frequency frequency-offset
+                 gain ppm subcarrier-modulation subcarriers cyclic-prefix-length
+                 taper-lengthinner-fec outer-fec id dump)
+=> T
+#+END_SRC
+
+Transmit the data from /file/.
+
+#+BEGIN_SRC lisp
+(receive-file file
+              &key
+                radio-driver sample-rate bit-rate frequency frequency-offset
+                gain ppm subcarrier-modulation subcarriers cyclic-prefix-length
+                taper-lengthinner-fec outer-fec id dump)
+=> T
+#+END_SRC
+
+Receive data into /file/.
+
+#+BEGIN_SRC lisp
+(transmit-stream stream
+                 &key
+                   radio-driver sample-rate bit-rate frequency frequency-offset
+                   gain ppm subcarrier-modulation subcarriers
+                   cyclic-prefix-length taper-lengthinner-fec outer-fec id dump)
+=> T
+#+END_SRC
+
+Transmit the data from /stream/.
+
+#+BEGIN_SRC lisp
+(receive-stream stream
+                &key
+                  radio-driver sample-rate bit-rate frequency frequency-offset
+                  gain ppm subcarrier-modulation subcarriers
+                  cyclic-prefix-length taper-lengthinner-fec outer-fec id dump)
+=> T
+#+END_SRC
+
+Receive data into /stream/.
+
+** Low level
+
+#+BEGIN_SRC lisp
+(verbosity)
+=> integer
+
+(setf (verbosity) value)
+ => integer
+#+END_SRC
+
+Get or set the verbosity level.
+
+#+BEGIN_SRC lisp
+  (make-transfer (&key
+                    radio-driver emit file data-callback callback-context
+                    sample-rate bit-rate frequency frequency-offset gain
+                    ppm subcarrier-modulation subcarriers cyclic-prefix-length
+                    taper-length inner-fec outer-fec id dump)
+  => foreign pointer
+#+END_SRC
+
+Initialize a transfer.
+
+#+BEGIN_SRC lisp
+(free-transfer transfer)
+#+END_SRC
+
+Cleanup after a finished transfer.
+
+#+BEGIN_SRC lisp
+(start-transfer transfer)
+#+END_SRC
+
+Start a transfer and return when finished.
+
+#+BEGIN_SRC lisp
+(stop-transfer transfer)
+#+END_SRC
+
+Interrupt a transfer.
+
+#+BEGIN_SRC lisp
+(stop-all-transfers transfer)
+#+END_SRC
+
+Interrupt all transfers.
+
+* Tests
+
+The tests can be run with ~(asdf:test-system "ofdm-transfer")~.
