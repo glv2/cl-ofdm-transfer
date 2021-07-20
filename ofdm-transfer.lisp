@@ -128,7 +128,8 @@
 
 (defun (setf verbosity) (value)
   "Set the verbosity level."
-  (ofdm-transfer-set-verbose value))
+  (ofdm-transfer-set-verbose value)
+  value)
 
 (defun make-transfer (&key
                         (radio-driver "") emit file data-callback
