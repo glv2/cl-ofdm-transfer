@@ -67,7 +67,7 @@
   (dump :string))
 
 (defcfun ("ofdm_transfer_create_callback" ofdm-transfer-create-callback) :pointer
-  "Initialize a new transfer."
+  "Initialize a new transfer using a callback."
   (radio-driver :string)
   (emit :unsigned-char)
   (data-callback :pointer)
