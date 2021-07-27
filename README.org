@@ -21,6 +21,7 @@ libofdm-transfer C library.
 
 *ofdm-transfer* requires:
  - [[https://common-lisp.net/project/cffi/][cffi]]
+ - [[https://github.com/glv2/cl-octet-streams][cl-octet-streams]]
  - [[https://github.com/glv2/ofdm-transfer][libofdm-transfer]]
 
 The tests also require:
@@ -42,7 +43,7 @@ The key parameters of the following functions match the ones described in
                &key
                  radio-driver sample-rate bit-rate frequency frequency-offset
                  gain ppm subcarrier-modulation subcarriers cyclic-prefix-length
-                 taper-lengthinner-fec outer-fec id dump)
+                 taper-length inner-fec outer-fec id dump)
 => T
 #+END_SRC
 
@@ -53,7 +54,7 @@ Transmit the data from /file/.
               &key
                 radio-driver sample-rate bit-rate frequency frequency-offset
                 gain ppm subcarrier-modulation subcarriers cyclic-prefix-length
-                taper-lengthinner-fec outer-fec id dump)
+                taper-length inner-fec outer-fec id dump)
 => T
 #+END_SRC
 
@@ -64,7 +65,7 @@ Receive data into /file/.
                  &key
                    radio-driver sample-rate bit-rate frequency frequency-offset
                    gain ppm subcarrier-modulation subcarriers
-                   cyclic-prefix-length taper-lengthinner-fec outer-fec id dump)
+                   cyclic-prefix-length taper-length inner-fec outer-fec id dump)
 => T
 #+END_SRC
 
@@ -75,11 +76,33 @@ Transmit the data from /stream/.
                 &key
                   radio-driver sample-rate bit-rate frequency frequency-offset
                   gain ppm subcarrier-modulation subcarriers
-                  cyclic-prefix-length taper-lengthinner-fec outer-fec id dump)
+                  cyclic-prefix-length taper-length inner-fec outer-fec id dump)
 => T
 #+END_SRC
 
 Receive data into /stream/.
+
+#+BEGIN_SRC lisp
+(transmit-buffer buffer
+                 &key
+                   start end radio-driver sample-rate bit-rate frequency
+                   frequency-offset gain ppm subcarrier-modulation subcarriers
+                   cyclic-prefix-length taper-length inner-fec outer-fec id
+                   dump)
+=> T
+#+END_SRC
+
+Transmit the data between /start/ and /end/ in /buffer/.
+
+#+BEGIN_SRC lisp
+(receive-buffer &key
+                  radio-driver sample-rate bit-rate frequency frequency-offset
+                  gain ppm subcarrier-modulation subcarriers
+                  cyclic-prefix-length taper-length inner-fec outer-fec id dump)
+=> bytes
+#+END_SRC
+
+Receive data into a new octet vector and return it.
 
 ** Low level
 

@@ -49,3 +49,11 @@
           (receive-stream decoded-stream :radio-driver radio)))
       :close-stream
       (is (same-files-p *message* decoded)))))
+
+(test transmit-and-receive-buffer
+  (with-temporary-file (:pathname samples)
+    (let ((data #(0 1 2 4 9 16 25 36 49 64 81 100 121 144 169 196 225))
+          (radio (format nil "file=~a" (namestring samples))))
+      (transmit-buffer data :radio-driver radio)
+      (let ((decoded (receive-buffer :radio-driver radio)))
+        (is (equalp data decoded))))))

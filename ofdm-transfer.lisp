@@ -14,13 +14,18 @@
                 #:null-pointer
                 #:null-pointer-p
                 #:use-foreign-library)
+  (:import-from :cl-octet-streams
+                #:with-octet-input-stream
+                #:with-octet-output-stream)
   (:export #:free-transfer
            #:make-transfer
            #:start-transfer
            #:stop-all-transfers
            #:stop-transfer
+           #:transmit-buffer
            #:transmit-file
            #:transmit-stream
+           #:receive-buffer
            #:receive-file
            #:receive-stream
            #:verbosity))
@@ -374,3 +379,58 @@
     (unwind-protect (start-transfer transfer)
       (free-transfer transfer))
     t))
+
+(defun transmit-buffer (buffer
+                        &key
+                          (start 0) end (radio-driver "") (sample-rate 2000000)
+                          (bit-rate 9600) (frequency 434000000)
+                          (frequency-offset 0) (gain 0) (ppm 0.0)
+                          (subcarrier-modulation "qpsk") (subcarriers 64)
+                          (cyclic-prefix-length 16) (taper-length 4)
+                          (inner-fec "h128") (outer-fec "none") (id "")
+                          dump)
+  "Transmit the data between START and END in BUFFER."
+  (with-octet-input-stream (stream buffer start (or end (length buffer)))
+    (transmit-stream stream
+                     :radio-driver radio-driver
+                     :sample-rate sample-rate
+                     :bit-rate bit-rate
+                     :frequency frequency
+                     :frequency-offset frequency-offset
+                     :gain gain
+                     :ppm ppm
+                     :subcarrier-modulation subcarrier-modulation
+                     :subcarriers subcarriers
+                     :cyclic-prefix-length cyclic-prefix-length
+                     :taper-length taper-length
+                     :inner-fec inner-fec
+                     :outer-fec outer-fec
+                     :id id
+                     :dump dump)))
+
+(defun receive-buffer (&key
+                         (radio-driver "") (sample-rate 2000000)
+                         (bit-rate 9600) (frequency 434000000)
+                         (frequency-offset 0) (gain 0) (ppm 0.0)
+                         (subcarrier-modulation "qpsk") (subcarriers 64)
+                         (cyclic-prefix-length 16) (taper-length 4)
+                         (inner-fec "h128") (outer-fec "none") (id "")
+                         dump)
+  "Receive data into a new octet vector and return it."
+  (with-octet-output-stream (stream)
+    (receive-stream stream
+                    :radio-driver radio-driver
+                    :sample-rate sample-rate
+                    :bit-rate bit-rate
+                    :frequency frequency
+                    :frequency-offset frequency-offset
+                    :gain gain
+                    :ppm ppm
+                    :subcarrier-modulation subcarrier-modulation
+                    :subcarriers subcarriers
+                    :cyclic-prefix-length cyclic-prefix-length
+                    :taper-length taper-length
+                    :inner-fec inner-fec
+                    :outer-fec outer-fec
+                    :id id
+                    :dump dump)))
