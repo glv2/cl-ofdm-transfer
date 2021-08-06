@@ -28,6 +28,7 @@
                      (cond
                        ((not (= i j)) nil)
                        ((zerop i) t)
+                       ((mismatch buffer-1 buffer-2 :end1 i :end2 i) nil)
                        (t (same-p))))))
           (same-p))))))
 
