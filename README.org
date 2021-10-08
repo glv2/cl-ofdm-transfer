@@ -1,6 +1,6 @@
 #+TITLE: ofdm-transfer
 #+AUTHOR: Guillaume LE VAILLANT
-#+DATE: 2021-07-20
+#+DATE: 2021-10-08
 #+EMAIL: glv@posteo.net
 #+LANGUAGE: en
 #+OPTIONS: num:nil toc:nil html-postamble:nil html-scripts:nil
@@ -103,6 +103,18 @@ Transmit the data between /start/ and /end/ in /buffer/.
 #+END_SRC
 
 Receive data into a new octet vector and return it.
+
+#+BEGIN_SRC lisp
+(receive-callback function
+                  &key
+                    radio-driver sample-rate bit-rate frequency frequency-offset
+                    gain ppm subcarrier-modulation subcarriers
+                    cyclic-prefix-length taper-length inner-fec outer-fec id dump)
+=> T
+#+END_SRC
+
+Receive data and call a /function/ on it. The /function/ must take one octet
+vector as argument.
 
 ** Low level
 

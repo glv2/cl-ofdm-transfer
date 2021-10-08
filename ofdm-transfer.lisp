@@ -26,6 +26,7 @@
            #:transmit-file
            #:transmit-stream
            #:receive-buffer
+           #:receive-callback
            #:receive-file
            #:receive-stream
            #:verbosity))
@@ -434,3 +435,52 @@
                     :outer-fec outer-fec
                     :id id
                     :dump dump)))
+
+(defparameter *user-function* nil)
+
+(defcallback call-user-function :int
+    ((context :pointer)
+     (payload :pointer)
+     (payload-size :unsigned-int))
+  (declare (ignore context))
+  (handler-case
+      (let ((data (make-array payload-size :element-type '(unsigned-byte 8))))
+        (dotimes (i payload-size)
+          (setf (aref data i) (mem-aref payload :unsigned-char i)))
+        (funcall *user-function* data)
+        payload-size)
+    (error () -1)))
+
+(defun receive-callback (function
+                         &key
+                           (radio-driver "") (sample-rate 2000000)
+                           (bit-rate 9600) (frequency 434000000)
+                           (frequency-offset 0) (gain 0) (ppm 0.0)
+                           (subcarrier-modulation "qpsk") (subcarriers 64)
+                           (cyclic-prefix-length 16) (taper-length 4)
+                           (inner-fec "h128") (outer-fec "none") (id "")
+                           dump)
+  "Receive data and call a FUNCTION on it. The FUNCTION must take one octet
+vector as argument."
+  (let* ((*user-function* function)
+         (transfer (make-transfer :emit nil
+                                  :data-callback (callback call-user-function)
+                                  :callback-context (null-pointer)
+                                  :radio-driver radio-driver
+                                  :sample-rate sample-rate
+                                  :bit-rate bit-rate
+                                  :frequency frequency
+                                  :frequency-offset frequency-offset
+                                  :gain gain
+                                  :ppm ppm
+                                  :subcarrier-modulation subcarrier-modulation
+                                  :subcarriers subcarriers
+                                  :cyclic-prefix-length cyclic-prefix-length
+                                  :taper-length taper-length
+                                  :inner-fec inner-fec
+                                  :outer-fec outer-fec
+                                  :id id
+                                  :dump dump)))
+    (unwind-protect (start-transfer transfer)
+      (free-transfer transfer))
+    t))
