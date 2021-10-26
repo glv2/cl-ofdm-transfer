@@ -22,6 +22,7 @@ libofdm-transfer C library.
 *ofdm-transfer* requires:
  - [[https://common-lisp.net/project/cffi/][cffi]]
  - [[https://github.com/glv2/cl-octet-streams][cl-octet-streams]]
+ - [[https://github.com/Shinmera/float-features][float-features]]
  - [[https://github.com/glv2/ofdm-transfer][libofdm-transfer]]
 
 The tests also require:

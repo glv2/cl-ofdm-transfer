@@ -9,7 +9,7 @@
   :version "1.0"
   :author "Guillaume LE VAILLANT"
   :license "GPL-3"
-  :depends-on ("cffi" "cl-octet-streams")
+  :depends-on ("cffi" "cl-octet-streams" "float-features")
   :in-order-to ((test-op (test-op "ofdm-transfer/tests")))
   :components ((:file "ofdm-transfer")))
 

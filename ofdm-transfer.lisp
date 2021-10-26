@@ -200,7 +200,8 @@
 
 (defun start-transfer (transfer)
   "Start a transfer and return when finished."
-  (ofdm-transfer-start transfer))
+  (float-features:with-float-traps-masked t
+    (ofdm-transfer-start transfer)))
 
 (defun stop-transfer (transfer)
   "Interrupt a transfer."
