@@ -42,7 +42,8 @@
 
 (test transmit-and-receive-stream
   (with-temporary-file (:pathname samples)
-    (with-temporary-file (:pathname decoded :stream decoded-stream)
+    (with-temporary-file (:pathname decoded :stream decoded-stream
+                          :direction :output :element-type '(unsigned-byte 8))
       (with-open-file (message-stream *message*
                                       :element-type '(unsigned-byte 8))
         (let ((radio (format nil "file=~a" (namestring samples))))
