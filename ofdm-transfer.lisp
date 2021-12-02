@@ -218,7 +218,7 @@
                         (ppm 0.0) (subcarrier-modulation "qpsk")
                         (subcarriers 64) (cyclic-prefix-length 16)
                         (taper-length 4) (inner-fec "h128") (outer-fec "none")
-                        (id "") dump)
+                        (id "") dump (final-delay 0.0))
   "Transmit the data from FILE."
   (let ((transfer (make-transfer :emit t
                                  :file file
@@ -237,7 +237,11 @@
                                  :outer-fec outer-fec
                                  :id id
                                  :dump dump)))
-    (unwind-protect (start-transfer transfer)
+    (unwind-protect
+         (progn
+           (start-transfer transfer)
+           (unless (zerop final-delay)
+             (sleep final-delay)))
       (free-transfer transfer))
     t))
 
@@ -322,7 +326,7 @@
                           (subcarrier-modulation "qpsk") (subcarriers 64)
                           (cyclic-prefix-length 16) (taper-length 4)
                           (inner-fec "h128") (outer-fec "none")
-                          (id "") dump)
+                          (id "") dump (final-delay 0.0))
   "Transmit the data from STREAM."
   (let* ((*data-stream* stream)
          (*buffer* (make-array 1024 :element-type '(unsigned-byte 8)))
@@ -344,7 +348,11 @@
                                   :outer-fec outer-fec
                                   :id id
                                   :dump dump)))
-    (unwind-protect (start-transfer transfer)
+    (unwind-protect
+         (progn
+           (start-transfer transfer)
+           (unless (zerop final-delay)
+             (sleep final-delay)))
       (free-transfer transfer))
     t))
 
@@ -390,7 +398,7 @@
                           (subcarrier-modulation "qpsk") (subcarriers 64)
                           (cyclic-prefix-length 16) (taper-length 4)
                           (inner-fec "h128") (outer-fec "none") (id "")
-                          dump)
+                          dump (final-delay 0.0))
   "Transmit the data between START and END in BUFFER."
   (with-octet-input-stream (stream buffer start (or end (length buffer)))
     (transmit-stream stream
@@ -408,7 +416,8 @@
                      :inner-fec inner-fec
                      :outer-fec outer-fec
                      :id id
-                     :dump dump)))
+                     :dump dump
+                     :final-delay final-delay)))
 
 (defun receive-buffer (&key
                          (radio-driver "") (sample-rate 2000000)

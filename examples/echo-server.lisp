@@ -50,7 +50,8 @@
                                  :cyclic-prefix-length *cyclic-prefix-length*
                                  :taper-length *taper-length*
                                  :inner-fec *inner-fec*
-                                 :outer-fec *outer-fec*))
+                                 :outer-fec *outer-fec*
+                                 :final-delay 1))
 
 (defun receive (callback frequency)
   (ofdm-transfer:receive-callback callback
