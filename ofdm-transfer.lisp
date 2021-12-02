@@ -70,7 +70,8 @@
   (inner-fec :string)
   (outer-fec :string)
   (id :string)
-  (dump :string))
+  (dump :string)
+  (timeout :unsigned-int))
 
 (defcfun ("ofdm_transfer_create_callback" ofdm-transfer-create-callback) :pointer
   "Initialize a new transfer using a callback."
@@ -91,7 +92,8 @@
   (inner-fec :string)
   (outer-fec :string)
   (id :string)
-  (dump :string))
+  (dump :string)
+  (timeout :unsigned-int))
 
 (defcfun ("ofdm_transfer_free" ofdm-transfer-free) :void
   "Cleanup after a finished transfer."
@@ -144,7 +146,7 @@
                         (ppm 0.0) (subcarrier-modulation "qpsk")
                         (subcarriers 64) (cyclic-prefix-length 16)
                         (taper-length 4) (inner-fec "h128") (outer-fec "none")
-                        (id "") dump)
+                        (id "") dump timeout)
   "Initialize a transfer."
   (when (or (and file data-callback)
             (and (not file) (not data-callback)))
@@ -168,7 +170,8 @@
                                             id
                                             (if dump
                                                 (namestring dump)
-                                                (null-pointer)))
+                                                (null-pointer))
+                                            (or timeout 0))
                       (ofdm-transfer-create-callback radio-driver
                                                      (if emit 1 0)
                                                      data-callback
@@ -189,7 +192,8 @@
                                                      id
                                                      (if dump
                                                          (namestring dump)
-                                                         (null-pointer))))))
+                                                         (null-pointer))
+                                                     (or timeout 0)))))
     (if (null-pointer-p transfer)
         (error "Failed to initialize transfer.")
         transfer)))
@@ -252,7 +256,7 @@
                        (ppm 0.0) (subcarrier-modulation "qpsk")
                        (subcarriers 64) (cyclic-prefix-length 16)
                        (taper-length 4) (inner-fec "h128") (outer-fec "none")
-                       (id "") dump)
+                       (id "") dump timeout)
   "Receive data into FILE."
   (let ((transfer (make-transfer :emit nil
                                  :file file
@@ -270,7 +274,8 @@
                                  :inner-fec inner-fec
                                  :outer-fec outer-fec
                                  :id id
-                                 :dump dump)))
+                                 :dump dump
+                                 :timeout timeout)))
     (unwind-protect (start-transfer transfer)
       (free-transfer transfer))
     t))
@@ -364,7 +369,7 @@
                          (subcarrier-modulation "qpsk") (subcarriers 64)
                          (cyclic-prefix-length 16) (taper-length 4)
                          (inner-fec "h128") (outer-fec "none")
-                         (id "") dump)
+                         (id "") dump timeout)
   "Receive data to STREAM."
   (let* ((*data-stream* stream)
          (*buffer* (make-array 1024 :element-type '(unsigned-byte 8)))
@@ -385,7 +390,8 @@
                                   :inner-fec inner-fec
                                   :outer-fec outer-fec
                                   :id id
-                                  :dump dump)))
+                                  :dump dump
+                                  :timeout timeout)))
     (unwind-protect (start-transfer transfer)
       (free-transfer transfer))
     t))
@@ -426,7 +432,7 @@
                          (subcarrier-modulation "qpsk") (subcarriers 64)
                          (cyclic-prefix-length 16) (taper-length 4)
                          (inner-fec "h128") (outer-fec "none") (id "")
-                         dump)
+                         dump timeout)
   "Receive data into a new octet vector and return it."
   (with-octet-output-stream (stream)
     (receive-stream stream
@@ -444,7 +450,8 @@
                     :inner-fec inner-fec
                     :outer-fec outer-fec
                     :id id
-                    :dump dump)))
+                    :dump dump
+                    :timeout timeout)))
 
 (defparameter *user-function* nil)
 
@@ -469,7 +476,7 @@
                            (subcarrier-modulation "qpsk") (subcarriers 64)
                            (cyclic-prefix-length 16) (taper-length 4)
                            (inner-fec "h128") (outer-fec "none") (id "")
-                           dump)
+                           dump timeout)
   "Receive data and call a FUNCTION on it. The FUNCTION must take one octet
 vector as argument."
   (let* ((*user-function* function)
@@ -490,7 +497,8 @@ vector as argument."
                                   :inner-fec inner-fec
                                   :outer-fec outer-fec
                                   :id id
-                                  :dump dump)))
+                                  :dump dump
+                                  :timeout timeout)))
     (unwind-protect (start-transfer transfer)
       (free-transfer transfer))
     t))

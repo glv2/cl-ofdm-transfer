@@ -55,7 +55,7 @@ Transmit the data from /file/.
               &key
                 radio-driver sample-rate bit-rate frequency frequency-offset
                 gain ppm subcarrier-modulation subcarriers cyclic-prefix-length
-                taper-length inner-fec outer-fec id dump)
+                taper-length inner-fec outer-fec id dump timeout)
 => T
 #+END_SRC
 
@@ -78,7 +78,8 @@ Transmit the data from /stream/.
                 &key
                   radio-driver sample-rate bit-rate frequency frequency-offset
                   gain ppm subcarrier-modulation subcarriers
-                  cyclic-prefix-length taper-length inner-fec outer-fec id dump)
+                  cyclic-prefix-length taper-length inner-fec outer-fec id dump
+                  timeout)
 => T
 #+END_SRC
 
@@ -100,7 +101,8 @@ Transmit the data between /start/ and /end/ in /buffer/.
 (receive-buffer &key
                   radio-driver sample-rate bit-rate frequency frequency-offset
                   gain ppm subcarrier-modulation subcarriers
-                  cyclic-prefix-length taper-length inner-fec outer-fec id dump)
+                  cyclic-prefix-length taper-length inner-fec outer-fec id dump
+                  timeout)
 => bytes
 #+END_SRC
 
@@ -111,7 +113,8 @@ Receive data into a new octet vector and return it.
                   &key
                     radio-driver sample-rate bit-rate frequency frequency-offset
                     gain ppm subcarrier-modulation subcarriers
-                    cyclic-prefix-length taper-length inner-fec outer-fec id dump)
+                    cyclic-prefix-length taper-length inner-fec outer-fec id dump
+                    timeout)
 => T
 #+END_SRC
 
@@ -135,7 +138,7 @@ Get or set the verbosity level.
                     radio-driver emit file data-callback callback-context
                     sample-rate bit-rate frequency frequency-offset gain
                     ppm subcarrier-modulation subcarriers cyclic-prefix-length
-                    taper-length inner-fec outer-fec id dump)
+                    taper-length inner-fec outer-fec id dump timeout)
   => foreign pointer
 #+END_SRC
 
