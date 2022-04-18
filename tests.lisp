@@ -1,5 +1,5 @@
 ;;; This file is part of cl-ofdm-transfer
-;;; Copyright 2021 Guillaume LE VAILLANT
+;;; Copyright 2021-2022 Guillaume LE VAILLANT
 ;;; Distributed under the GNU GPL v3 or later.
 ;;; See the file LICENSE for terms of use and distribution.
 
@@ -38,6 +38,22 @@
       (let ((radio (format nil "file=~a" (namestring samples))))
         (transmit-file (namestring *message*) :radio-driver radio)
         (receive-file (namestring decoded) :radio-driver radio)
+        (is (same-files-p *message* decoded))))))
+
+(test transmit-and-receive-file-audio
+  (with-temporary-file (:pathname samples)
+    (with-temporary-file (:pathname decoded)
+      (let ((radio (format nil "file=~a" (namestring samples))))
+        (transmit-file (namestring *message*) :radio-driver radio
+                                              :audio t
+                                              :sample-rate 48000
+                                              :frequency 1500
+                                              :bit-rate 2400)
+        (receive-file (namestring decoded) :radio-driver radio
+                                           :audio t
+                                           :sample-rate 48000
+                                           :frequency 1500
+                                           :bit-rate 2400)
         (is (same-files-p *message* decoded))))))
 
 (test transmit-and-receive-stream

@@ -1,5 +1,5 @@
 ;;; This file is part of cl-ofdm-transfer
-;;; Copyright 2021 Guillaume LE VAILLANT
+;;; Copyright 2021-2022 Guillaume LE VAILLANT
 ;;; Distributed under the GNU GPL v3 or later.
 ;;; See the file LICENSE for terms of use and distribution.
 
@@ -71,7 +71,8 @@
   (outer-fec :string)
   (id :string)
   (dump :string)
-  (timeout :unsigned-int))
+  (timeout :unsigned-int)
+  (audio :unsigned-char))
 
 (defcfun ("ofdm_transfer_create_callback" ofdm-transfer-create-callback) :pointer
   "Initialize a new transfer using a callback."
@@ -93,7 +94,8 @@
   (outer-fec :string)
   (id :string)
   (dump :string)
-  (timeout :unsigned-int))
+  (timeout :unsigned-int)
+  (audio :unsigned-char))
 
 (defcfun ("ofdm_transfer_free" ofdm-transfer-free) :void
   "Cleanup after a finished transfer."
@@ -146,7 +148,7 @@
                         (ppm 0.0) (subcarrier-modulation "qpsk")
                         (subcarriers 64) (cyclic-prefix-length 16)
                         (taper-length 4) (inner-fec "h128") (outer-fec "none")
-                        (id "") dump timeout)
+                        (id "") dump timeout audio)
   "Initialize a transfer."
   (when (or (and file data-callback)
             (and (not file) (not data-callback)))
@@ -171,7 +173,8 @@
                                             (if dump
                                                 (namestring dump)
                                                 (null-pointer))
-                                            (or timeout 0))
+                                            (or timeout 0)
+                                            (if audio 1 0))
                       (ofdm-transfer-create-callback radio-driver
                                                      (if emit 1 0)
                                                      data-callback
@@ -193,7 +196,8 @@
                                                      (if dump
                                                          (namestring dump)
                                                          (null-pointer))
-                                                     (or timeout 0)))))
+                                                     (or timeout 0)
+                                                     (if audio 1 0)))))
     (if (null-pointer-p transfer)
         (error "Failed to initialize transfer.")
         transfer)))
@@ -222,7 +226,7 @@
                         (ppm 0.0) (subcarrier-modulation "qpsk")
                         (subcarriers 64) (cyclic-prefix-length 16)
                         (taper-length 4) (inner-fec "h128") (outer-fec "none")
-                        (id "") dump (final-delay 0.0))
+                        (id "") dump audio (final-delay 0.0))
   "Transmit the data from FILE."
   (let ((transfer (make-transfer :emit t
                                  :file file
@@ -240,7 +244,8 @@
                                  :inner-fec inner-fec
                                  :outer-fec outer-fec
                                  :id id
-                                 :dump dump)))
+                                 :dump dump
+                                 :audio audio)))
     (unwind-protect
          (progn
            (start-transfer transfer)
@@ -256,7 +261,7 @@
                        (ppm 0.0) (subcarrier-modulation "qpsk")
                        (subcarriers 64) (cyclic-prefix-length 16)
                        (taper-length 4) (inner-fec "h128") (outer-fec "none")
-                       (id "") dump timeout)
+                       (id "") dump timeout audio)
   "Receive data into FILE."
   (let ((transfer (make-transfer :emit nil
                                  :file file
@@ -275,7 +280,8 @@
                                  :outer-fec outer-fec
                                  :id id
                                  :dump dump
-                                 :timeout timeout)))
+                                 :timeout timeout
+                                 :audio audio)))
     (unwind-protect (start-transfer transfer)
       (free-transfer transfer))
     t))
@@ -331,7 +337,7 @@
                           (subcarrier-modulation "qpsk") (subcarriers 64)
                           (cyclic-prefix-length 16) (taper-length 4)
                           (inner-fec "h128") (outer-fec "none")
-                          (id "") dump (final-delay 0.0))
+                          (id "") dump audio (final-delay 0.0))
   "Transmit the data from STREAM."
   (let* ((*data-stream* stream)
          (*buffer* (make-array 1024 :element-type '(unsigned-byte 8)))
@@ -352,7 +358,8 @@
                                   :inner-fec inner-fec
                                   :outer-fec outer-fec
                                   :id id
-                                  :dump dump)))
+                                  :dump dump
+                                  :audio audio)))
     (unwind-protect
          (progn
            (start-transfer transfer)
@@ -369,7 +376,7 @@
                          (subcarrier-modulation "qpsk") (subcarriers 64)
                          (cyclic-prefix-length 16) (taper-length 4)
                          (inner-fec "h128") (outer-fec "none")
-                         (id "") dump timeout)
+                         (id "") dump timeout audio)
   "Receive data to STREAM."
   (let* ((*data-stream* stream)
          (*buffer* (make-array 1024 :element-type '(unsigned-byte 8)))
@@ -391,7 +398,8 @@
                                   :outer-fec outer-fec
                                   :id id
                                   :dump dump
-                                  :timeout timeout)))
+                                  :timeout timeout
+                                  :audio audio)))
     (unwind-protect (start-transfer transfer)
       (free-transfer transfer))
     t))
@@ -404,7 +412,7 @@
                           (subcarrier-modulation "qpsk") (subcarriers 64)
                           (cyclic-prefix-length 16) (taper-length 4)
                           (inner-fec "h128") (outer-fec "none") (id "")
-                          dump (final-delay 0.0))
+                          dump audio (final-delay 0.0))
   "Transmit the data between START and END in BUFFER."
   (with-octet-input-stream (stream buffer start (or end (length buffer)))
     (transmit-stream stream
@@ -423,6 +431,7 @@
                      :outer-fec outer-fec
                      :id id
                      :dump dump
+                     :audio audio
                      :final-delay final-delay)))
 
 (defun receive-buffer (&key
@@ -432,7 +441,7 @@
                          (subcarrier-modulation "qpsk") (subcarriers 64)
                          (cyclic-prefix-length 16) (taper-length 4)
                          (inner-fec "h128") (outer-fec "none") (id "")
-                         dump timeout)
+                         dump timeout audio)
   "Receive data into a new octet vector and return it."
   (with-octet-output-stream (stream)
     (receive-stream stream
@@ -451,7 +460,8 @@
                     :outer-fec outer-fec
                     :id id
                     :dump dump
-                    :timeout timeout)))
+                    :timeout timeout
+                    :audio audio)))
 
 (defparameter *user-function* nil)
 
@@ -476,7 +486,7 @@
                            (subcarrier-modulation "qpsk") (subcarriers 64)
                            (cyclic-prefix-length 16) (taper-length 4)
                            (inner-fec "h128") (outer-fec "none") (id "")
-                           dump timeout)
+                           dump timeout audio)
   "Receive data and call a FUNCTION on it. The FUNCTION must take one octet
 vector as argument."
   (let* ((*user-function* function)
@@ -498,7 +508,8 @@ vector as argument."
                                   :outer-fec outer-fec
                                   :id id
                                   :dump dump
-                                  :timeout timeout)))
+                                  :timeout timeout
+                                  :audio audio)))
     (unwind-protect (start-transfer transfer)
       (free-transfer transfer))
     t))

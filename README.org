@@ -1,6 +1,6 @@
 #+TITLE: ofdm-transfer
 #+AUTHOR: Guillaume LE VAILLANT
-#+DATE: 2021-10-08
+#+DATE: 2022-04-18
 #+EMAIL: glv@posteo.net
 #+LANGUAGE: en
 #+OPTIONS: num:nil toc:nil html-postamble:nil html-scripts:nil
@@ -44,7 +44,7 @@ The key parameters of the following functions match the ones described in
                &key
                  radio-driver sample-rate bit-rate frequency frequency-offset
                  gain ppm subcarrier-modulation subcarriers cyclic-prefix-length
-                 taper-length inner-fec outer-fec id dump final-delay)
+                 taper-length inner-fec outer-fec id dump audio final-delay)
 => T
 #+END_SRC
 
@@ -55,7 +55,7 @@ Transmit the data from /file/.
               &key
                 radio-driver sample-rate bit-rate frequency frequency-offset
                 gain ppm subcarrier-modulation subcarriers cyclic-prefix-length
-                taper-length inner-fec outer-fec id dump timeout)
+                taper-length inner-fec outer-fec id dump timeout audio)
 => T
 #+END_SRC
 
@@ -67,7 +67,7 @@ Receive data into /file/.
                    radio-driver sample-rate bit-rate frequency frequency-offset
                    gain ppm subcarrier-modulation subcarriers
                    cyclic-prefix-length taper-length inner-fec outer-fec id dump
-                   final-delay)
+                   audio final-delay)
 => T
 #+END_SRC
 
@@ -79,7 +79,7 @@ Transmit the data from /stream/.
                   radio-driver sample-rate bit-rate frequency frequency-offset
                   gain ppm subcarrier-modulation subcarriers
                   cyclic-prefix-length taper-length inner-fec outer-fec id dump
-                  timeout)
+                  timeout audio)
 => T
 #+END_SRC
 
@@ -91,7 +91,7 @@ Receive data into /stream/.
                    start end radio-driver sample-rate bit-rate frequency
                    frequency-offset gain ppm subcarrier-modulation subcarriers
                    cyclic-prefix-length taper-length inner-fec outer-fec id
-                   dump final-delay)
+                   dump audio final-delay)
 => T
 #+END_SRC
 
@@ -102,7 +102,7 @@ Transmit the data between /start/ and /end/ in /buffer/.
                   radio-driver sample-rate bit-rate frequency frequency-offset
                   gain ppm subcarrier-modulation subcarriers
                   cyclic-prefix-length taper-length inner-fec outer-fec id dump
-                  timeout)
+                  timeout audio)
 => bytes
 #+END_SRC
 
@@ -114,7 +114,7 @@ Receive data into a new octet vector and return it.
                     radio-driver sample-rate bit-rate frequency frequency-offset
                     gain ppm subcarrier-modulation subcarriers
                     cyclic-prefix-length taper-length inner-fec outer-fec id dump
-                    timeout)
+                    timeout audio)
 => T
 #+END_SRC
 
@@ -138,7 +138,7 @@ Get or set the verbosity level.
                     radio-driver emit file data-callback callback-context
                     sample-rate bit-rate frequency frequency-offset gain
                     ppm subcarrier-modulation subcarriers cyclic-prefix-length
-                    taper-length inner-fec outer-fec id dump timeout)
+                    taper-length inner-fec outer-fec id dump timeout audio)
   => foreign pointer
 #+END_SRC
 
