@@ -61,7 +61,7 @@
   (bit-rate :unsigned-int)
   (frequency :unsigned-long)
   (frequency-offset :long)
-  (gain :unsigned-int)
+  (gain :string)
   (ppm :float)
   (subcarrier-modulation :string)
   (subcarriers :unsigned-int)
@@ -84,7 +84,7 @@
   (bit-rate :unsigned-int)
   (frequency :unsigned-long)
   (frequency-offset :long)
-  (gain :unsigned-int)
+  (gain :string)
   (ppm :float)
   (subcarrier-modulation :string)
   (subcarriers :unsigned-int)
@@ -161,7 +161,9 @@
                                             bit-rate
                                             frequency
                                             frequency-offset
-                                            gain
+                                            (if (stringp gain)
+                                                gain
+                                                (format nil "~d" gain))
                                             ppm
                                             subcarrier-modulation
                                             subcarriers
@@ -184,7 +186,9 @@
                                                      bit-rate
                                                      frequency
                                                      frequency-offset
-                                                     gain
+                                                     (if (stringp gain)
+                                                         gain
+                                                         (format nil "~d" gain))
                                                      ppm
                                                      subcarrier-modulation
                                                      subcarriers
