@@ -1,12 +1,12 @@
 ;;; This file is part of cl-ofdm-transfer
-;;; Copyright 2021 Guillaume LE VAILLANT
+;;; Copyright 2021-2022 Guillaume LE VAILLANT
 ;;; Distributed under the GNU GPL v3 or later.
 ;;; See the file LICENSE for terms of use and distribution.
 
 (defsystem "ofdm-transfer"
   :name "ofdm-transfer"
   :description "Send and receive data with SDRs using OFDM modulation"
-  :version "1.0"
+  :version "1.6"
   :author "Guillaume LE VAILLANT"
   :license "GPL-3"
   :depends-on ("cffi" "cl-octet-streams" "float-features")
@@ -16,7 +16,7 @@
 (defsystem "ofdm-transfer/tests"
   :name "ofdm-transfer/tests"
   :description "Tests fot ofdm-transfer"
-  :version "1.0"
+  :version "1.6"
   :author "Guillaume LE VAILLANT"
   :license "GPL-3"
   :depends-on ("fiveam" "ofdm-transfer" "uiop")
