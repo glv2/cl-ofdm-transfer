@@ -411,7 +411,7 @@
 (defun transmit-buffer (buffer
                         &key
                           (start 0) end (radio-driver "") (sample-rate 2000000)
-                          (bit-rate 9600) (frequency 434000000)
+                          (bit-rate 38400) (frequency 434000000)
                           (frequency-offset 0) (gain 0) (ppm 0.0)
                           (subcarrier-modulation "qpsk") (subcarriers 64)
                           (cyclic-prefix-length 16) (taper-length 4)
@@ -440,7 +440,7 @@
 
 (defun receive-buffer (&key
                          (radio-driver "") (sample-rate 2000000)
-                         (bit-rate 9600) (frequency 434000000)
+                         (bit-rate 38400) (frequency 434000000)
                          (frequency-offset 0) (gain 0) (ppm 0.0)
                          (subcarrier-modulation "qpsk") (subcarriers 64)
                          (cyclic-prefix-length 16) (taper-length 4)
@@ -485,7 +485,7 @@
 (defun receive-callback (function
                          &key
                            (radio-driver "") (sample-rate 2000000)
-                           (bit-rate 9600) (frequency 434000000)
+                           (bit-rate 38400) (frequency 434000000)
                            (frequency-offset 0) (gain 0) (ppm 0.0)
                            (subcarrier-modulation "qpsk") (subcarriers 64)
                            (cyclic-prefix-length 16) (taper-length 4)
