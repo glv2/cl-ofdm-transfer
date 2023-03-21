@@ -6,6 +6,8 @@
 #+OPTIONS: num:nil toc:nil html-postamble:nil html-scripts:nil
 #+HTML_DOCTYPE: html5
 
+The active repository is at https://codeberg.org/glv/cl-ofdm-transfer
+
 * Description
 
 *ofdm-transfer* is a Common Lisp library to send or receive data by software
@@ -21,9 +23,9 @@ libofdm-transfer C library.
 
 *ofdm-transfer* requires:
  - [[https://common-lisp.net/project/cffi/][cffi]]
- - [[https://github.com/glv2/cl-octet-streams][cl-octet-streams]]
+ - [[https://codeberg.org/glv/cl-octet-streams][cl-octet-streams]]
  - [[https://github.com/Shinmera/float-features][float-features]]
- - [[https://github.com/glv2/ofdm-transfer][libofdm-transfer]]
+ - [[https://codeberg.org/glv/ofdm-transfer][libofdm-transfer]]
 
 The tests also require:
  - [[https://common-lisp.net/project/fiveam/][fiveam]]
@@ -37,7 +39,7 @@ in the ~ofdm-transfer~ package.
 ** High level
 
 The key parameters of the following functions match the ones described in
-[[https://github.com/glv2/ofdm-transfer/blob/master/README][ofdm-transfer/README]].
+[[https://codeberg.org/glv/ofdm-transfer/blob/master/README][ofdm-transfer/README]].
 
 #+BEGIN_SRC lisp
 (transmit-file file
